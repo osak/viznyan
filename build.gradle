@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.0'
+    id "org.openjfx.javafxplugin" version '0.0.10'
+}
+
+group 'jp.osak.viznyan'
+version '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+javafx {
+    version = '16'
+    modules = [ 'javafx.controls' ]
+}
+
+application {
+    mainClass = 'jp.osak.viznyan.Main'
+}
+
+test {
+    useJUnitPlatform()
+}
