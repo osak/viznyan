@@ -3,6 +3,8 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.5.0'
     id "org.openjfx.javafxplugin" version '0.0.10'
+    id "com.google.protobuf" version "0.8.16"
+    id 'idea'
 }
 
 group 'jp.osak.viznyan'
@@ -14,6 +16,7 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'com.google.protobuf:protobuf-java:3.8.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
@@ -25,6 +28,20 @@ javafx {
 
 application {
     mainClass = 'jp.osak.viznyan.Main'
+}
+
+protobuf {
+    protoc {
+        // Download from repositories
+        artifact = 'com.google.protobuf:protoc:3.0.0'
+    }
+    generatedFilesBaseDir = "$buildDir/generated"
+}
+
+idea {
+    module {
+        sourceDirs += file("$buildDir/generated/main/java")
+    }
 }
 
 test {

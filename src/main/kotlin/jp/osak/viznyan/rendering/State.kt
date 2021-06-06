@@ -5,6 +5,12 @@ import javafx.scene.canvas.GraphicsContext
 class State {
     private val shapes: MutableMap<Int, Shape> = mutableMapOf()
 
+    constructor()
+
+    constructor(init: Collection<Shape>) {
+        set(init)
+    }
+
     fun set(newValues: Collection<Shape>) {
         shapes.clear()
         for (shape in newValues) {
