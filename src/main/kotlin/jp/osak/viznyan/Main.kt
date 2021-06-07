@@ -5,9 +5,10 @@ import javafx.stage.Stage
 import jp.osak.viznyan.scene.VisualizerSceneManager
 
 class Main : Application() {
-    private val visualizerSceneManager = VisualizerSceneManager()
 
     override fun start(primaryStage: Stage) {
+        val visualizerSceneManager = VisualizerSceneManager(primaryStage)
+
         primaryStage.scene = visualizerSceneManager.scene
         primaryStage.show()
         visualizerSceneManager.repaint()
