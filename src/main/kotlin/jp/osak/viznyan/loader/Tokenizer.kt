@@ -40,10 +40,12 @@ class Tokenizer(private val reader: Reader) : Closeable {
     fun skipNonNewLineSpace() {
         while (true) {
             val char = readChar()
-            if (char == null || char == ' ' || char == '\t') {
+            if (char == ' ' || char == '\t') {
                 continue
             } else {
-                unread(char)
+                if (char != null) {
+                    unread(char)
+                }
                 break
             }
         }

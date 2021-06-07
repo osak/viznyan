@@ -37,4 +37,15 @@ class State {
             }
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        return when (other) {
+            is State -> this.shapes.equals(other.shapes)
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return shapes.hashCode()
+    }
 }

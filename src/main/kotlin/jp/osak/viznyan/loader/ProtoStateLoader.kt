@@ -7,7 +7,7 @@ import jp.osak.viznyan.rendering.Shape
 import jp.osak.viznyan.rendering.State
 import java.io.File
 
-class StateLoader {
+class ProtoStateLoader {
     fun loadFromFile(path: String): State {
         val protoState = File(path).inputStream().use {
             jp.osak.viznyan.proto.Shape.State.newBuilder().mergeFrom(it).build()

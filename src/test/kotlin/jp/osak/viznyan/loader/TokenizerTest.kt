@@ -39,6 +39,13 @@ internal class TokenizerTest {
     }
 
     @Test
+    fun `skipNonNewLineSpace stops after EOF`() {
+        val tokenizer = Tokenizer(StringReader(""))
+        tokenizer.skipNonNewLineSpace()
+        assertEquals(null, tokenizer.readInt())
+    }
+
+    @Test
     fun expect() {
         val tokenizer = Tokenizer(StringReader("123"))
         assertDoesNotThrow { tokenizer.expect('1') }
