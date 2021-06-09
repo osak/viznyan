@@ -5,6 +5,7 @@ import jp.osak.viznyan.rendering.Line
 import jp.osak.viznyan.rendering.Rectangle
 import jp.osak.viznyan.rendering.Shape
 import jp.osak.viznyan.rendering.State
+import jp.osak.viznyan.rendering.Text
 import java.io.InputStream
 
 class CompProgStateLoader {
@@ -27,39 +28,38 @@ class CompProgStateLoader {
      * [rectangle...]
      * <n-lines>
      * [line...]
+     * <n-texts>
+     * [text...]
      * ```
      */
     private fun readState(tokenizer: Tokenizer): State {
         val shapes = mutableListOf<Shape>()
 
-        tokenizer.skipNonNewLineSpace()
-        val nCircles = tokenizer.readIntOrThrow("n-circles")
-
-        tokenizer.skipNonNewLineSpace()
-        tokenizer.expectNewLine()
-        repeat(nCircles) {
+        readRepeatedBlock("circles", tokenizer) {
             shapes.add(readCircle(tokenizer))
         }
-
-        tokenizer.skipNonNewLineSpace()
-        val nRectangles = tokenizer.readIntOrThrow("n-rectangles")
-
-        tokenizer.skipNonNewLineSpace()
-        tokenizer.expectNewLine()
-        repeat(nRectangles) {
+        readRepeatedBlock("rectangles", tokenizer) {
             shapes.add(readRectangle(tokenizer))
         }
-
-        tokenizer.skipNonNewLineSpace()
-        val nLines = tokenizer.readIntOrThrow("n-lines")
-
-        tokenizer.skipNonNewLineSpace()
-        tokenizer.expectNewLine()
-        repeat(nLines) {
+        readRepeatedBlock("lines", tokenizer) {
             shapes.add(readLine(tokenizer))
+        }
+        readRepeatedBlock("texts", tokenizer) {
+            shapes.add(readText(tokenizer))
         }
 
         return State(shapes)
+    }
+
+    private fun readRepeatedBlock(label: String, tokenizer: Tokenizer, body: (Tokenizer) -> Unit) {
+        tokenizer.skipNonNewLineSpace()
+        val n = tokenizer.readIntOrThrow("n-$label")
+
+        tokenizer.skipNonNewLineSpace()
+        tokenizer.expectNewLine()
+        repeat(n) {
+            body(tokenizer)
+        }
     }
 
     /**
@@ -144,6 +144,31 @@ class CompProgStateLoader {
         tokenizer.skipNonNewLineSpace()
         tokenizer.expectNewLine()
         return Line(id, x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
+    }
+
+    /**
+     * Reads a Text object.
+     *
+     * Format:
+     * ```
+     * <id> <x> <y> <text>'\n'
+     */
+    private fun readText(tokenizer: Tokenizer): Text {
+        tokenizer.skipNonNewLineSpace()
+        val id = tokenizer.readIntOrThrow("id")
+
+        tokenizer.skipNonNewLineSpace()
+        val x = tokenizer.readIntOrThrow("x")
+
+        tokenizer.skipNonNewLineSpace()
+        val y = tokenizer.readIntOrThrow("y")
+
+        tokenizer.skipNonNewLineSpace()
+        val text = tokenizer.readUntilNewLine()
+            ?: throw InvalidFormatException("Premature end of input: <text> is missing")
+
+        tokenizer.expectNewLine()
+        return Text(id, x.toDouble(), y.toDouble(), text)
     }
 
     private fun Tokenizer.readIntOrThrow(label: String): Int {

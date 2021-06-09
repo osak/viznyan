@@ -4,6 +4,7 @@ import jp.osak.viznyan.rendering.Circle
 import jp.osak.viznyan.rendering.Line
 import jp.osak.viznyan.rendering.Rectangle
 import jp.osak.viznyan.rendering.State
+import jp.osak.viznyan.rendering.Text
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayInputStream
@@ -22,6 +23,9 @@ internal class CompProgStateLoaderTest {
             2
             5 10 20 30 40
             6 50 60 70 80
+            2
+            7 10 20 aaa
+            8 30 40 this is a test
             
         """.trimIndent()
 
@@ -36,6 +40,8 @@ internal class CompProgStateLoaderTest {
                     Rectangle(4, 50.0, 60.0, 70.0, 80.0),
                     Line(5, 10.0, 20.0, 30.0, 40.0),
                     Line(6, 50.0, 60.0, 70.0, 80.0),
+                    Text(7, 10.0, 20.0, "aaa"),
+                    Text(8, 30.0, 40.0, "this is a test"),
                 )
             ), state
         )

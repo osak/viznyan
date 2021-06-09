@@ -37,6 +37,27 @@ class Tokenizer(private val reader: Reader) : Closeable {
         return value
     }
 
+    /**
+     * Read a string until newline character.
+     *
+     * @return The string until newline character, or `null` if the underlying reader has already reached EOF.
+     */
+    fun readUntilNewLine(): String? {
+        val firstChar = readChar() ?: return null
+        unread(firstChar)
+
+        val buffer = StringBuffer()
+        while (true) {
+            val char = readChar() ?: break
+            if (char == '\n' || char == '\r') {
+                unread(char)
+                break
+            }
+            buffer.append(char)
+        }
+        return buffer.toString()
+    }
+
     fun skipNonNewLineSpace() {
         while (true) {
             val char = readChar()

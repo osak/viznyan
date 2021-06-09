@@ -26,3 +26,10 @@ data class Line(
     val x2: Double,
     val y2: Double,
 ) : Shape
+
+data class Text(
+    override val id: Int,
+    val x: Double,
+    val y: Double,
+    val text: String
+) : Shape

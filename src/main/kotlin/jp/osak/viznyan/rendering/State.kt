@@ -1,6 +1,8 @@
 package jp.osak.viznyan.rendering
 
+import javafx.geometry.VPos
 import javafx.scene.canvas.GraphicsContext
+import javafx.scene.text.Font
 
 class State {
     private val shapes: MutableMap<Int, Shape> = mutableMapOf()
@@ -33,6 +35,11 @@ class State {
                 }
                 is Line -> {
                     gc.strokeLine(shape.x1, shape.y1, shape.x2, shape.y2)
+                }
+                is Text -> {
+                    gc.textBaseline = VPos.TOP
+                    gc.font = Font(12.0)
+                    gc.fillText(shape.text, shape.x, shape.y)
                 }
             }
         }
