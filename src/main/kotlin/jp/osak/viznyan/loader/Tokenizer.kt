@@ -102,6 +102,12 @@ class Tokenizer(private val reader: Reader) : Closeable {
         throw ExpectationMismatchException("Expected a newline but read '$char'")
     }
 
+    fun isEof(): Boolean {
+        val char = readChar() ?: return true
+        unread(char)
+        return false
+    }
+
     override fun close() {
         reader.close()
     }

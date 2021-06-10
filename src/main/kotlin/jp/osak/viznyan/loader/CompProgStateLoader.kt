@@ -9,11 +9,19 @@ import jp.osak.viznyan.rendering.Text
 import java.io.InputStream
 
 class CompProgStateLoader {
-    fun load(inputStream: InputStream): State {
+    fun load(inputStream: InputStream): List<State> {
         return inputStream.bufferedReader().use { reader ->
+            val states = mutableListOf<State>()
             Tokenizer(reader).use {
-                readState(it)
+                while (true) {
+                    it.skipNonNewLineSpace()
+                    if (it.isEof()) {
+                        break
+                    }
+                    states.add(readState(it))
+                }
             }
+            states
         }
     }
 
