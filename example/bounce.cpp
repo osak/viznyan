@@ -157,32 +157,38 @@ struct SimState {
         }
         const Vec np = p + v * len;
         double minT = 1.0;
+        bool onWall = false;
         Vec minWall;
         for (const Wall &wall : walls) {
             if (intersect(p, np, wall.p1, wall.p2)) {
                 const Vec v1 = np - p;
                 const Vec v2 = wall.p2 - wall.p1;
                 const Vec v3 = wall.p1 - p;
-                const double det = cross(v1, v2);
-                const double t = (v2.y * v3.x - v1.y * v3.y) / det;
-                if (t < minT) {
+                const double det = cross(v1, v2 * -1);
+                const double t = (-v2.y * v3.x + v2.x * v3.y) / det;
+
+                if (t < minT && fabs(t) > 1e-10) {
                     minT = t;
+                    minWall = wall.p2 - wall.p1;
+                    onWall = false;
+                } else if (minT == 1.0 && fabs(cross(wall.p1-p, wall.p2-p)) < 1e-10) {
+                    onWall = true;
                     minWall = wall.p2 - wall.p1;
                 }
             }
+
         }
         p = p + v * len * minT;
         vizCircle->x = (int) p.x;
         vizCircle->y = (int) p.y;
 
-        if (minT != 1.0) {
-            const Vec hitP = p + v * minT;
+        if (minT != 1.0 || onWall) {
             Vec perp = unit(Vec{minWall.y, minWall.x});
             if (dot(perp, v) > 0) {
                 perp = perp * -1;
             }
-            const Vec refP = hitP + v + perp*fabs(dot(v, perp)*2);
-            v = refP - hitP;
+            v = v + perp*fabs(dot(v, perp)*2);
+            p = p + v * 1e-8;
             step(len * (1 - minT));
         }
     }
@@ -195,7 +201,7 @@ int main(int argc, char **argv) {
     state.addBlock(399, 0, 400, 400);
     state.addBlock(0, 399, 400, 400);
     state.addBlock(0, 0, 1, 400);
-    state.addBlock(50, 50, 350, 100);
+    state.addBlock(50, 80, 300, 100);
 
     int steps = 100;
     if (argc > 1) {
