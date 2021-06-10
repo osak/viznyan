@@ -15,11 +15,13 @@ class Tokenizer(private val reader: Reader) : Closeable {
         // Check if the reader is not exhausted yet.
         // If it's already exhausted, return null to indicate EOF.
         val firstChar = readChar() ?: return null
-        unread(firstChar)
+        if (firstChar != '-') {
+            unread(firstChar)
+        }
 
         // Ensure this is a valid beginning of a number.
-        if (!firstChar.isDigit()) {
-            throw ExpectationMismatchException("Expected a digit, but got '$firstChar'")
+        if (!(firstChar.isDigit() || firstChar == '-')) {
+            throw ExpectationMismatchException("Expected a digit or '-', but got '$firstChar'")
         }
 
         var value = 0
@@ -33,6 +35,9 @@ class Tokenizer(private val reader: Reader) : Closeable {
                 unread(char)
                 break
             }
+        }
+        if (firstChar == '-') {
+            value = -value
         }
         return value
     }
