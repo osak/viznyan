@@ -127,8 +127,8 @@ struct Wall {
 };
 
 bool intersect(const Vec &p1, const Vec &p2, const Vec &q1, const Vec &q2) {
-    return cross(q1 - p1, p2 - p1) * cross(q2 - p1, p2 - p1) < 0 &&
-            cross(p1 - q1, q2 - q1) * cross(p2 - q1, q2 - q1) < 0;
+    return cross(q1 - p1, p2 - p1) * cross(q2 - p1, p2 - p1) <= 0 &&
+            cross(p1 - q1, q2 - q1) * cross(p2 - q1, q2 - q1) <= 0;
 }
 
 struct SimState {
@@ -171,7 +171,7 @@ struct SimState {
                 }
             }
         }
-        p = p + v * minT;
+        p = p + v * len * minT;
         vizCircle->x = (int) p.x;
         vizCircle->y = (int) p.y;
 
@@ -183,12 +183,12 @@ struct SimState {
             }
             const Vec refP = hitP + v + perp*fabs(dot(v, perp)*2);
             v = refP - hitP;
-            step(len * minT);
+            step(len * (1 - minT));
         }
     }
 };
 
-int main() {
+int main(int argc, char **argv) {
     SimState state;
 
     state.addBlock(0, 0, 400, 1);
@@ -197,7 +197,11 @@ int main() {
     state.addBlock(0, 0, 1, 400);
     state.addBlock(50, 50, 350, 100);
 
-    for (int i = 0; i < 100; ++i) {
+    int steps = 100;
+    if (argc > 1) {
+        steps = std::stoi(argv[1]);
+    }
+    for (int i = 0; i < steps; ++i) {
         state.step();
         std::cout << state.vizState;
     }
