@@ -1,5 +1,6 @@
 package jp.osak.viznyan.scene
 
+import javafx.animation.Animation
 import javafx.animation.AnimationTimer
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ListProperty
@@ -32,6 +33,15 @@ class VisualizerSceneManager(stage: Stage) {
     private val canvas: Canvas
     private var states: ListProperty<State> = SimpleListProperty()
     private var frame: IntegerProperty = SimpleIntegerProperty()
+    private var animationTimer: AnimationTimer = object : AnimationTimer() {
+        override fun handle(now: Long) {
+            if (frame.get() + 1 >= states.size) {
+                this.stop()
+                return
+            }
+            frame.set(frame.value + 1)
+        }
+    }
 
     init {
         val root = VBox()
@@ -59,22 +69,16 @@ class VisualizerSceneManager(stage: Stage) {
         frame.addListener { _ -> repaint() }
         borderPane.center = canvas
 
-        val controlPane = HBox()
+        val controlPane = HBox(8.0)
         val startButton = Button("Start")
         startButton.onAction = EventHandler {
-            frame.set(0)
-            val timer = object : AnimationTimer() {
-                override fun handle(now: Long) {
-                    if (frame.get() + 1 >= states.size) {
-                        this.stop()
-                        return
-                    }
-                    frame.set(frame.value + 1)
-                }
-            }
-            timer.start()
+            animationTimer.start()
         }
-        controlPane.children.add(startButton)
+        val stopButton = Button("Stop")
+        stopButton.onAction = EventHandler {
+            animationTimer.stop()
+        }
+        controlPane.children.addAll(startButton, stopButton)
 
         val slider = Slider()
         slider.valueProperty().bindBidirectional(frame)
