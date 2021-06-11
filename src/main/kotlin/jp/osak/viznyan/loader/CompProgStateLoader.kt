@@ -7,8 +7,17 @@ import jp.osak.viznyan.rendering.Shape
 import jp.osak.viznyan.rendering.State
 import jp.osak.viznyan.rendering.Text
 import java.io.InputStream
+import java.io.Reader
 
 class CompProgStateLoader {
+    fun loadOne(tokenizer: Tokenizer): State? {
+        tokenizer.skipNonNewLineSpace()
+        if (tokenizer.isEof()) {
+            return null
+        }
+        return readState(tokenizer)
+    }
+
     fun load(inputStream: InputStream): List<State> {
         return inputStream.bufferedReader().use { reader ->
             val states = mutableListOf<State>()

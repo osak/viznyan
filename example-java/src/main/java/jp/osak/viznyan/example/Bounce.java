@@ -1,6 +1,7 @@
 package jp.osak.viznyan.example;
 
 import jp.osak.viznyan.output.FileOutput;
+import jp.osak.viznyan.output.SocketOutput;
 import jp.osak.viznyan.shape.Circle;
 import jp.osak.viznyan.shape.Rectangle;
 import jp.osak.viznyan.state.State;
@@ -28,15 +29,18 @@ public class Bounce {
         state.add(circle);
     }
 
-    public void run(int steps, String filename) throws IOException {
-        final FileOutput fileOutput = new FileOutput(new File(filename));
+    public void run(int steps, String filename) throws IOException, InterruptedException {
+        //final FileOutput fileOutput = new FileOutput(new File(filename));
+        final SocketOutput output = new SocketOutput(4444);
+        System.out.println("start");
 
         for (int i = 0; i < steps; ++i) {
             step(1.0);
-            fileOutput.write(state);
+            output.write(state);
+            Thread.sleep(30);
         }
 
-        fileOutput.close();
+        output.close();
     }
 
     private void addBlock(int x1, int y1, int x2, int y2) {
@@ -92,7 +96,7 @@ public class Bounce {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         new Bounce().run(1000, "example/a.txt");
     }
 }

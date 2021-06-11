@@ -2,6 +2,7 @@ package jp.osak.viznyan.scene
 
 import javafx.animation.Animation
 import javafx.animation.AnimationTimer
+import javafx.application.Platform
 import javafx.beans.property.IntegerProperty
 import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleIntegerProperty
@@ -26,6 +27,7 @@ import javafx.stage.FileChooser
 import javafx.stage.Stage
 import jp.osak.viznyan.loader.CompProgStateLoader
 import jp.osak.viznyan.rendering.State
+import jp.osak.viznyan.streaming.SocketStreamer
 import java.io.File
 
 class VisualizerSceneManager(stage: Stage) {
@@ -36,7 +38,7 @@ class VisualizerSceneManager(stage: Stage) {
     private var animationTimer: AnimationTimer = object : AnimationTimer() {
         override fun handle(now: Long) {
             if (frame.get() + 1 >= states.size) {
-                this.stop()
+                //this.stop()
                 return
             }
             frame.set(frame.value + 1)
@@ -92,6 +94,18 @@ class VisualizerSceneManager(stage: Stage) {
         frame.addListener { _ -> frameLabel.text = "${frame.value + 1} / ${states.size}" }
         states.addListener(ListChangeListener { frameLabel.text = "${frame.value + 1} / ${states.size}" })
         controlPane.children.add(frameLabel)
+
+        val streamingButton = Button("Stream")
+        streamingButton.onAction = EventHandler {
+            states.set(FXCollections.observableArrayList())
+            animationTimer.start()
+            SocketStreamer(4444) {
+                Platform.runLater {
+                    states.add(it)
+                }
+            }
+        }
+        controlPane.children.add(streamingButton)
 
         borderPane.bottom = controlPane
 
