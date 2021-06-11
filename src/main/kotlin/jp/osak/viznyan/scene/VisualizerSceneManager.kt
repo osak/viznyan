@@ -1,13 +1,23 @@
 package jp.osak.viznyan.scene
 
 import javafx.animation.AnimationTimer
+import javafx.beans.property.IntegerProperty
+import javafx.beans.property.ListProperty
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleListProperty
+import javafx.beans.property.StringProperty
+import javafx.beans.property.StringPropertyBase
+import javafx.collections.FXCollections
+import javafx.collections.ListChangeListener
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
 import javafx.scene.control.Button
+import javafx.scene.control.Label
 import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
+import javafx.scene.control.Slider
 import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
@@ -20,8 +30,8 @@ import java.io.File
 class VisualizerSceneManager(stage: Stage) {
     val scene: Scene
     private val canvas: Canvas
-    private var states: List<State> = listOf()
-    private var frame: Int = 0
+    private var states: ListProperty<State> = SimpleListProperty()
+    private var frame: IntegerProperty = SimpleIntegerProperty()
 
     init {
         val root = VBox()
@@ -39,32 +49,46 @@ class VisualizerSceneManager(stage: Stage) {
         openFile.onAction = EventHandler {
             val file = fileChooser.showOpenDialog(stage)
             loadState(file)
-            frame = 0
+            frame.set(0)
         }
 
         val borderPane = BorderPane()
         canvas = Canvas(500.0, 500.0)
         canvas.widthProperty().addListener { _ -> repaint() }
         canvas.heightProperty().addListener { _ -> repaint() }
+        frame.addListener { _ -> repaint() }
         borderPane.center = canvas
 
         val controlPane = HBox()
         val startButton = Button("Start")
         startButton.onAction = EventHandler {
-            frame = 0
+            frame.set(0)
             val timer = object : AnimationTimer() {
                 override fun handle(now: Long) {
-                    frame++
-                    if (frame >= states.size) {
+                    if (frame.get() + 1 >= states.size) {
                         this.stop()
                         return
                     }
-                    repaint()
+                    frame.set(frame.value + 1)
                 }
             }
             timer.start()
         }
         controlPane.children.add(startButton)
+
+        val slider = Slider()
+        slider.valueProperty().bindBidirectional(frame)
+        slider.min = 0.0
+        slider.maxProperty().bind(states.sizeProperty().subtract(1))
+        slider.majorTickUnit = 1.0
+        slider.isSnapToTicks = true
+        controlPane.children.add(slider)
+
+        val frameLabel = Label()
+        frame.addListener { _ -> frameLabel.text = "${frame.value + 1} / ${states.size}" }
+        states.addListener(ListChangeListener { frameLabel.text = "${frame.value + 1} / ${states.size}" })
+        controlPane.children.add(frameLabel)
+
         borderPane.bottom = controlPane
 
         root.children.add(borderPane)
@@ -77,15 +101,16 @@ class VisualizerSceneManager(stage: Stage) {
         gc.clearRect(0.0, 0.0, canvas.width, canvas.height)
         //gc.strokeLine(0.0, 0.0, canvas.width, canvas.height)
 
-        if (frame >= 0 && frame < states.size) {
-            states[frame].render(gc)
+        val currentFrame = frame.get()
+        if (currentFrame >= 0 && currentFrame < states.size) {
+            states[currentFrame].render(gc)
         }
     }
 
     private fun loadState(file: File) {
         val loader = CompProgStateLoader()
-        states = file.inputStream().use {
-            loader.load(it)
+        file.inputStream().use {
+            states.set(FXCollections.observableArrayList(loader.load(it)))
         }
         repaint()
     }
