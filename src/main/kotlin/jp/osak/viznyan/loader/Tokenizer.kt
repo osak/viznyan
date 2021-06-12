@@ -5,6 +5,7 @@ import java.io.Reader
 
 class Tokenizer(private val reader: Reader) : Closeable {
     private var unreadBuffer: Char? = null
+    private var separatorChars: Set<Char> = setOf(' ', '\t')
 
     /**
      * Read an integer value.
@@ -12,6 +13,8 @@ class Tokenizer(private val reader: Reader) : Closeable {
      * @return The integer value, or `null` if the underlying reader has already reached EOF.
      */
     fun readInt(): Int? {
+        skipSeparators()
+
         // Check if the reader is not exhausted yet.
         // If it's already exhausted, return null to indicate EOF.
         val firstChar = readChar() ?: return null
@@ -48,6 +51,8 @@ class Tokenizer(private val reader: Reader) : Closeable {
      * @return The string until newline character, or `null` if the underlying reader has already reached EOF.
      */
     fun readUntilNewLine(): String? {
+        skipSeparators()
+
         val firstChar = readChar() ?: return null
         unread(firstChar)
 
@@ -63,10 +68,10 @@ class Tokenizer(private val reader: Reader) : Closeable {
         return buffer.toString()
     }
 
-    fun skipNonNewLineSpace() {
+    fun skipSeparators() {
         while (true) {
             val char = readChar()
-            if (char == ' ' || char == '\t') {
+            if (separatorChars.contains(char)) {
                 continue
             } else {
                 if (char != null) {
@@ -78,6 +83,8 @@ class Tokenizer(private val reader: Reader) : Closeable {
     }
 
     fun expect(c: Char) {
+        skipSeparators()
+
         val char = readChar()
         if (char != c) {
             throw ExpectationMismatchException("Expected '$c' but read '$char'")
@@ -85,6 +92,8 @@ class Tokenizer(private val reader: Reader) : Closeable {
     }
 
     fun expectNewLine() {
+        skipSeparators()
+
         val char = readChar()
         if (char == '\r') {
             // Test if it's CRLF
@@ -108,6 +117,8 @@ class Tokenizer(private val reader: Reader) : Closeable {
     }
 
     fun isEof(): Boolean {
+        skipSeparators()
+
         val char = readChar() ?: return true
         unread(char)
         return false

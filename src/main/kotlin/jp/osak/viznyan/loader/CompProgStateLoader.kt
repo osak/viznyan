@@ -7,11 +7,9 @@ import jp.osak.viznyan.rendering.Shape
 import jp.osak.viznyan.rendering.State
 import jp.osak.viznyan.rendering.Text
 import java.io.InputStream
-import java.io.Reader
 
 class CompProgStateLoader {
     fun loadOne(tokenizer: Tokenizer): State? {
-        tokenizer.skipNonNewLineSpace()
         if (tokenizer.isEof()) {
             return null
         }
@@ -23,7 +21,7 @@ class CompProgStateLoader {
             val states = mutableListOf<State>()
             Tokenizer(reader).use {
                 while (true) {
-                    it.skipNonNewLineSpace()
+                    it.skipSeparators()
                     if (it.isEof()) {
                         break
                     }
@@ -69,11 +67,9 @@ class CompProgStateLoader {
     }
 
     private fun readRepeatedBlock(label: String, tokenizer: Tokenizer, body: (Tokenizer) -> Unit) {
-        tokenizer.skipNonNewLineSpace()
         val n = tokenizer.readIntOrThrow("n-$label")
-
-        tokenizer.skipNonNewLineSpace()
         tokenizer.expectNewLine()
+
         repeat(n) {
             body(tokenizer)
         }
@@ -88,20 +84,12 @@ class CompProgStateLoader {
      * ```
      */
     private fun readCircle(tokenizer: Tokenizer): Circle {
-        tokenizer.skipNonNewLineSpace()
         val id = tokenizer.readIntOrThrow("id")
-
-        tokenizer.skipNonNewLineSpace()
         val x = tokenizer.readIntOrThrow("x")
-
-        tokenizer.skipNonNewLineSpace()
         val y = tokenizer.readIntOrThrow("y")
-
-        tokenizer.skipNonNewLineSpace()
         val radius = tokenizer.readIntOrThrow("radius")
-
-        tokenizer.skipNonNewLineSpace()
         tokenizer.expectNewLine()
+
         return Circle(id, x.toDouble(), y.toDouble(), radius.toDouble())
     }
 
@@ -114,23 +102,13 @@ class CompProgStateLoader {
      * ```
      */
     private fun readRectangle(tokenizer: Tokenizer): Rectangle {
-        tokenizer.skipNonNewLineSpace()
         val id = tokenizer.readIntOrThrow("id")
-
-        tokenizer.skipNonNewLineSpace()
         val x1 = tokenizer.readIntOrThrow("x1")
-
-        tokenizer.skipNonNewLineSpace()
         val y1 = tokenizer.readIntOrThrow("y1")
-
-        tokenizer.skipNonNewLineSpace()
         val x2 = tokenizer.readIntOrThrow("x2")
-
-        tokenizer.skipNonNewLineSpace()
         val y2 = tokenizer.readIntOrThrow("y2")
-
-        tokenizer.skipNonNewLineSpace()
         tokenizer.expectNewLine()
+
         return Rectangle(id, x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
     }
 
@@ -143,22 +121,12 @@ class CompProgStateLoader {
      * ```
      */
     private fun readLine(tokenizer: Tokenizer): Line {
-        tokenizer.skipNonNewLineSpace()
         val id = tokenizer.readIntOrThrow("id")
-
-        tokenizer.skipNonNewLineSpace()
         val x1 = tokenizer.readIntOrThrow("x1")
-
-        tokenizer.skipNonNewLineSpace()
         val y1 = tokenizer.readIntOrThrow("y1")
-
-        tokenizer.skipNonNewLineSpace()
         val x2 = tokenizer.readIntOrThrow("x2")
-
-        tokenizer.skipNonNewLineSpace()
         val y2 = tokenizer.readIntOrThrow("y2")
 
-        tokenizer.skipNonNewLineSpace()
         tokenizer.expectNewLine()
         return Line(id, x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
     }
@@ -171,16 +139,9 @@ class CompProgStateLoader {
      * <id> <x> <y> <text>'\n'
      */
     private fun readText(tokenizer: Tokenizer): Text {
-        tokenizer.skipNonNewLineSpace()
         val id = tokenizer.readIntOrThrow("id")
-
-        tokenizer.skipNonNewLineSpace()
         val x = tokenizer.readIntOrThrow("x")
-
-        tokenizer.skipNonNewLineSpace()
         val y = tokenizer.readIntOrThrow("y")
-
-        tokenizer.skipNonNewLineSpace()
         val text = tokenizer.readUntilNewLine()
             ?: throw InvalidFormatException("Premature end of input: <text> is missing")
 

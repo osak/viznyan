@@ -9,9 +9,8 @@ import java.io.StringReader
 internal class TokenizerTest {
     @Test
     fun readInt() {
-        val tokenizer = Tokenizer(StringReader("12345 67890"))
+        val tokenizer = Tokenizer(StringReader(" 12345 67890"))
         assertEquals(12345, tokenizer.readInt())
-        assertDoesNotThrow { tokenizer.expect(' ') }
         assertEquals(67890, tokenizer.readInt())
 
         // After EOF, it returns null
@@ -25,31 +24,32 @@ internal class TokenizerTest {
     }
 
     @Test
-    fun skipNonNewLineSpace() {
+    fun skipSeparators() {
         val tokenizer = Tokenizer(StringReader("  123"))
-        tokenizer.skipNonNewLineSpace()
+        tokenizer.skipSeparators()
         assertEquals(123, tokenizer.readInt())
     }
 
     @Test
-    fun `skipNonNewLineSpace does not do anything if the first character is not a space`() {
+    fun `skipSeparators does not do anything if the first character is not a space`() {
         val tokenizer = Tokenizer(StringReader("1"))
-        tokenizer.skipNonNewLineSpace()
+        tokenizer.skipSeparators()
         assertDoesNotThrow { tokenizer.expect('1') }
     }
 
     @Test
     fun `skipNonNewLineSpace stops after EOF`() {
         val tokenizer = Tokenizer(StringReader(""))
-        tokenizer.skipNonNewLineSpace()
+        tokenizer.skipSeparators()
         assertEquals(null, tokenizer.readInt())
     }
 
     @Test
     fun expect() {
-        val tokenizer = Tokenizer(StringReader("123"))
+        val tokenizer = Tokenizer(StringReader("12 3"))
         assertDoesNotThrow { tokenizer.expect('1') }
         assertDoesNotThrow { tokenizer.expect('2') }
+        // expect() also skips separators
         assertDoesNotThrow { tokenizer.expect('3') }
     }
 
