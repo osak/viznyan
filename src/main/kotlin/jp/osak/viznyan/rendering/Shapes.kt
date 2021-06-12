@@ -1,6 +1,6 @@
 package jp.osak.viznyan.rendering
 
-sealed interface Shape {
+interface Shape {
     val id: Int
 }
 

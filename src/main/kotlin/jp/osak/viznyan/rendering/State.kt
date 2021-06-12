@@ -41,6 +41,9 @@ class State {
                     gc.font = Font(12.0)
                     gc.fillText(shape.text, shape.x, shape.y)
                 }
+                is DotGraph -> {
+                    shape.render(gc)
+                }
             }
         }
     }

@@ -26,6 +26,7 @@ import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import jp.osak.viznyan.loader.CompProgStateLoader
+import jp.osak.viznyan.rendering.DotGraph
 import jp.osak.viznyan.rendering.State
 import jp.osak.viznyan.streaming.SocketStreamer
 import java.io.File
@@ -112,6 +113,11 @@ class VisualizerSceneManager(stage: Stage) {
         root.children.add(borderPane)
 
         scene = Scene(root)
+        val dotGraph = DotGraph(1, 500)
+        dotGraph.addNode("a")
+        dotGraph.addNode("b")
+        dotGraph.addEdge("a", "b")
+        states.set(FXCollections.observableArrayList(State(listOf(dotGraph))))
     }
 
     fun repaint() {
