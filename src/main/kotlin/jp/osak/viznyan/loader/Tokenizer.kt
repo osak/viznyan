@@ -45,6 +45,26 @@ class Tokenizer(private val reader: Reader) : Closeable {
         return value
     }
 
+    fun readToken(): String? {
+        skipSeparators()
+
+        // Check if the reader is not exhausted yet.
+        // If it's already exhausted, return null to indicate EOF.
+        val firstChar = readChar() ?: return null
+        unread(firstChar)
+
+        val buffer = StringBuffer()
+        while (true) {
+            val char = readChar() ?: break
+            if (separatorChars.contains(char)) {
+                unread(char)
+                break
+            }
+            buffer.append(char)
+        }
+        return buffer.toString()
+    }
+
     /**
      * Read a string until newline character.
      *

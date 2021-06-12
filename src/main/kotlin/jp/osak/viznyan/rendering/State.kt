@@ -13,11 +13,20 @@ class State {
         set(init)
     }
 
+    fun get(id: Int): Shape? {
+        return shapes[id]
+    }
+
     fun set(newValues: Collection<Shape>) {
         shapes.clear()
         for (shape in newValues) {
             shapes[shape.id] = shape
         }
+    }
+
+    fun put(shape: Shape) {
+        require (shape.id != 0) { "shape.id must not be 0 (must be set)" }
+        shapes[shape.id] = shape
     }
 
     fun render(gc: GraphicsContext) {

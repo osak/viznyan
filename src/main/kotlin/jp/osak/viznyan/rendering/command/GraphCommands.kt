@@ -1,0 +1,23 @@
+package jp.osak.viznyan.rendering.command
+
+data class AddNode (
+    val graphId: Int,
+    val nodeId: Int,
+) : Command
+
+data class AddEdge (
+    val graphId: Int,
+    val from: Int,
+    val to: Int
+) : Command
+
+data class DeleteNode(
+    val graphId: Int,
+    val nodeId: Int,
+) : Command
+
+data class DeleteEdge (
+    val graphId: Int,
+    val from: Int,
+    val to: Int
+) : Command
