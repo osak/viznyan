@@ -10,6 +10,7 @@ import jp.osak.viznyan.rendering.command.Command
 import jp.osak.viznyan.rendering.command.DeleteEdge
 import jp.osak.viznyan.rendering.command.DeleteNode
 import jp.osak.viznyan.rendering.command.Frame
+import jp.osak.viznyan.rendering.command.MoveCircle
 
 class CommandLoader {
     fun readFrame(tokenizer: Tokenizer): Frame? {
@@ -28,6 +29,7 @@ class CommandLoader {
         val type = tokenizer.readToken()
         return when (type) {
             "add_circle" -> readAddCircle(tokenizer)
+            "move_circle" -> readMoveCircle(tokenizer)
             "add_rect" -> readAddRectangle(tokenizer)
             "add_line" -> readAddLine(tokenizer)
             "add_text" -> readAddText(tokenizer)
@@ -47,6 +49,14 @@ class CommandLoader {
         val radius = tokenizer.readIntOrThrow("radius")
         tokenizer.expectNewLine()
         return AddCircle(id, x, y, radius)
+    }
+
+    private fun readMoveCircle(tokenizer: Tokenizer): MoveCircle {
+        val id = tokenizer.readIntOrThrow("id")
+        val x = tokenizer.readIntOrThrow("x")
+        val y = tokenizer.readIntOrThrow("y")
+        tokenizer.expectNewLine()
+        return MoveCircle(id, x, y)
     }
 
     private fun readAddRectangle(tokenizer: Tokenizer): AddRectangle {

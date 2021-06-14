@@ -7,6 +7,12 @@ data class AddCircle (
     val radius: Int,
 ) : Command
 
+data class MoveCircle (
+    val id: Int,
+    val x: Int,
+    val y: Int,
+) : Command
+
 data class AddRectangle (
     val id: Int,
     val x1: Int,

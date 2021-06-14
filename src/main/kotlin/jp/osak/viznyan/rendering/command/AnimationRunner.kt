@@ -27,6 +27,10 @@ class AnimationRunner() {
                 is AddCircle -> {
                     state.put(Circle(command.id, command.x.toDouble(), command.y.toDouble(), command.radius.toDouble()))
                 }
+                is MoveCircle -> {
+                    val circle = getCircle(command.id)
+                    state.put(circle.copy(x = command.x.toDouble(), y = command.y.toDouble()))
+                }
                 is AddRectangle -> {
                     state.put(Rectangle(command.id, command.x1.toDouble(), command.y1.toDouble(), command.x2.toDouble(), command.y2.toDouble()))
                 }
@@ -70,6 +74,12 @@ class AnimationRunner() {
             runStep()
         }
         return state
+    }
+
+    private fun getCircle(id: Int): Circle {
+        val maybeCircle = state.get(id)
+        return maybeCircle as? Circle
+            ?: throw TypeMismatchException("Shape id $id is expected to be Circle, but actually $maybeCircle")
     }
 
     private fun getGraph(graphId: Int): DotGraph {
