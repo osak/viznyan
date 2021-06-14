@@ -1,7 +1,11 @@
 package jp.osak.viznyan.rendering.command
 
+import jp.osak.viznyan.rendering.Circle
 import jp.osak.viznyan.rendering.DotGraph
+import jp.osak.viznyan.rendering.Line
+import jp.osak.viznyan.rendering.Rectangle
 import jp.osak.viznyan.rendering.State
+import jp.osak.viznyan.rendering.Text
 import java.lang.RuntimeException
 
 class AnimationRunner() {
@@ -20,6 +24,18 @@ class AnimationRunner() {
         val frame = frames[currentFrame+1]
         for (command in frame.commands) {
             when (command) {
+                is AddCircle -> {
+                    state.put(Circle(command.id, command.x.toDouble(), command.y.toDouble(), command.radius.toDouble()))
+                }
+                is AddRectangle -> {
+                    state.put(Rectangle(command.id, command.x1.toDouble(), command.y1.toDouble(), command.x2.toDouble(), command.y2.toDouble()))
+                }
+                is AddLine -> {
+                    state.put(Line(command.id, command.x1.toDouble(), command.y1.toDouble(), command.x2.toDouble(), command.y2.toDouble()))
+                }
+                is AddText -> {
+                    state.put(Text(command.id, command.x.toDouble(), command.y.toDouble(), command.text))
+                }
                 is AddNode -> {
                     val graph = getGraph(command.graphId)
                     if (command.x != null && command.y != null) {
