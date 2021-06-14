@@ -1,9 +1,14 @@
 package jp.osak.viznyan.example;
 
+import jp.osak.viznyan.command.AddCircle;
+import jp.osak.viznyan.command.AddRect;
+import jp.osak.viznyan.command.MoveCircle;
 import jp.osak.viznyan.output.FileOutput;
+import jp.osak.viznyan.output.Output;
 import jp.osak.viznyan.output.SocketOutput;
 import jp.osak.viznyan.shape.Circle;
 import jp.osak.viznyan.shape.Rectangle;
+import jp.osak.viznyan.state.FrameBuffer;
 import jp.osak.viznyan.state.State;
 
 import java.io.File;
@@ -11,12 +16,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Bounce {
-    private final State state = new State();
     private final ArrayList<Segment> walls = new ArrayList<>();
-    private final Circle circle;
+    private final FrameBuffer frameBuffer;
     private Vec p, v;
 
-    Bounce() {
+    Bounce(Output output) throws IOException {
+        frameBuffer = new FrameBuffer(output);
+
         addBlock(0, 0, 400, 1);
         addBlock(399, 0, 400, 400);
         addBlock(0, 399, 400, 400);
@@ -25,26 +31,21 @@ public class Bounce {
 
         p = new Vec(200, 350);
         v = new Vec(5, -5);
-        circle = new Circle(0, (int) p.x, (int) p.y, 5);
-        state.add(circle);
+        frameBuffer.add(new AddCircle(1, (int) p.x, (int) p.y, 5));
+        frameBuffer.endFrame();
     }
 
-    public void run(int steps, String filename) throws IOException, InterruptedException {
-        //final FileOutput fileOutput = new FileOutput(new File(filename));
-        final SocketOutput output = new SocketOutput(4444);
+    public void run(int steps) throws IOException, InterruptedException {
         System.out.println("start");
 
         for (int i = 0; i < steps; ++i) {
             step(1.0);
-            output.write(state);
-            Thread.sleep(30);
+            frameBuffer.endFrame();
         }
-
-        output.close();
     }
 
     private void addBlock(int x1, int y1, int x2, int y2) {
-        state.add(new Rectangle(0, x1, y1, x2, y2));
+        frameBuffer.add(new AddRect(1000 + walls.size(), x1, y1, x2, y2));
         walls.add(new Segment(new Vec(x1, y1), new Vec(x1, y2)));
         walls.add(new Segment(new Vec(x1, y2), new Vec(x2, y2)));
         walls.add(new Segment(new Vec(x2, y2), new Vec(x2, y1)));
@@ -82,8 +83,7 @@ public class Bounce {
 
         }
         p = p.add(v.mul(len * minT));
-        circle.setX((int) p.x);
-        circle.setY((int) p.y);
+        frameBuffer.add(new MoveCircle(1, (int)p.x, (int)p.y));
 
         if (minWall != null) {
             Vec perp = new Vec(minWall.y, minWall.x).unit();
@@ -97,7 +97,10 @@ public class Bounce {
     }
 
     public static void main(String[] args) throws Exception {
-        new Bounce().run(1000, "example/a.txt");
+        final Output output = new FileOutput(new File("example/a.txt"));
+        //final Output output = new SocketOutput(4444);
+        new Bounce(output).run(1000);
+        output.close();
     }
 }
 
