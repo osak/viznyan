@@ -11,6 +11,7 @@ import javafx.scene.image.Image
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.nio.charset.Charset
 
 class DotGraph(override val id: Int, val width: Int) : Shape {
     private var graph: MutableGraph = Factory.mutGraph().graphAttrs().add("layout", "fdp")
@@ -24,6 +25,10 @@ class DotGraph(override val id: Int, val width: Int) : Shape {
 
     fun addNode(name: String) {
         graph.add(Factory.mutNode(name).add(Label.of(name)))
+    }
+
+    fun addNode(name: String, x: Double, y: Double) {
+        graph.add(Factory.mutNode(name).add(Label.of(name)).add("pos", "${x},${y}!"))
     }
 
     fun addEdge(from: String, to: String): Boolean {

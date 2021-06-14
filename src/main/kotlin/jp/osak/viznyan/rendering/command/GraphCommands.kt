@@ -3,6 +3,8 @@ package jp.osak.viznyan.rendering.command
 data class AddNode (
     val graphId: Int,
     val nodeId: Int,
+    val x: Double? = null,
+    val y: Double? = null,
 ) : Command
 
 data class AddEdge (

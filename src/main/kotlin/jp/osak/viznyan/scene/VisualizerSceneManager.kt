@@ -1,16 +1,9 @@
 package jp.osak.viznyan.scene
 
-import javafx.animation.Animation
 import javafx.animation.AnimationTimer
 import javafx.application.Platform
 import javafx.beans.property.IntegerProperty
-import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleIntegerProperty
-import javafx.beans.property.SimpleListProperty
-import javafx.beans.property.StringProperty
-import javafx.beans.property.StringPropertyBase
-import javafx.collections.FXCollections
-import javafx.collections.ListChangeListener
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.canvas.Canvas
@@ -25,20 +18,21 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.FileChooser
 import javafx.stage.Stage
-import jp.osak.viznyan.loader.CompProgStateLoader
-import jp.osak.viznyan.rendering.DotGraph
-import jp.osak.viznyan.rendering.State
+import jp.osak.viznyan.loader.CommandLoader
+import jp.osak.viznyan.loader.Tokenizer
+import jp.osak.viznyan.rendering.command.AnimationRunner
 import jp.osak.viznyan.streaming.SocketStreamer
 import java.io.File
 
 class VisualizerSceneManager(stage: Stage) {
     val scene: Scene
     private val canvas: Canvas
-    private var states: ListProperty<State> = SimpleListProperty()
     private var frame: IntegerProperty = SimpleIntegerProperty()
+    private var maxFrame: IntegerProperty = SimpleIntegerProperty()
+    private var animationRunner: AnimationRunner = AnimationRunner()
     private var animationTimer: AnimationTimer = object : AnimationTimer() {
         override fun handle(now: Long) {
-            if (frame.get() + 1 >= states.size) {
+            if (frame.get() + 1 > animationRunner.maxFrame) {
                 //this.stop()
                 return
             }
@@ -63,6 +57,8 @@ class VisualizerSceneManager(stage: Stage) {
             val file = fileChooser.showOpenDialog(stage)
             loadState(file)
             frame.set(0)
+            maxFrame.set(animationRunner.maxFrame)
+            repaint()
         }
 
         val borderPane = BorderPane()
@@ -86,23 +82,27 @@ class VisualizerSceneManager(stage: Stage) {
         val slider = Slider()
         slider.valueProperty().bindBidirectional(frame)
         slider.min = 0.0
-        slider.maxProperty().bind(states.sizeProperty().subtract(1))
+        slider.maxProperty().bind(maxFrame)
         slider.majorTickUnit = 1.0
         slider.isSnapToTicks = true
         controlPane.children.add(slider)
 
         val frameLabel = Label()
-        frame.addListener { _ -> frameLabel.text = "${frame.value + 1} / ${states.size}" }
-        states.addListener(ListChangeListener { frameLabel.text = "${frame.value + 1} / ${states.size}" })
+        frame.addListener { _ -> frameLabel.text = "${frame.value + 1} / ${maxFrame.value + 1}" }
+        maxFrame.addListener { _ -> frameLabel.text = "${frame.value + 1} / ${maxFrame.value + 1}" }
         controlPane.children.add(frameLabel)
 
         val streamingButton = Button("Stream")
         streamingButton.onAction = EventHandler {
-            states.set(FXCollections.observableArrayList())
+            animationRunner = AnimationRunner()
+            maxFrame.set(0)
+            frame.set(0)
+
             animationTimer.start()
             SocketStreamer(4444) {
                 Platform.runLater {
-                    states.add(it)
+                    animationRunner.addFrame(it)
+                    maxFrame.set(maxFrame.value + 1)
                 }
             }
         }
@@ -113,11 +113,6 @@ class VisualizerSceneManager(stage: Stage) {
         root.children.add(borderPane)
 
         scene = Scene(root)
-        val dotGraph = DotGraph(1, 500)
-        dotGraph.addNode("a")
-        dotGraph.addNode("b")
-        dotGraph.addEdge("a", "b")
-        states.set(FXCollections.observableArrayList(State(listOf(dotGraph))))
     }
 
     fun repaint() {
@@ -126,16 +121,19 @@ class VisualizerSceneManager(stage: Stage) {
         //gc.strokeLine(0.0, 0.0, canvas.width, canvas.height)
 
         val currentFrame = frame.get()
-        if (currentFrame >= 0 && currentFrame < states.size) {
-            states[currentFrame].render(gc)
+        if (currentFrame in 0..animationRunner.maxFrame) {
+            animationRunner.getState(currentFrame).render(gc)
         }
     }
 
     private fun loadState(file: File) {
-        val loader = CompProgStateLoader()
+        val loader = CommandLoader()
         file.inputStream().use {
-            states.set(FXCollections.observableArrayList(loader.load(it)))
+            val tokenizer = Tokenizer(it.bufferedReader())
+            while (true) {
+                val frame = loader.readFrame(tokenizer) ?: break
+                animationRunner.addFrame(frame)
+            }
         }
-        repaint()
     }
 }

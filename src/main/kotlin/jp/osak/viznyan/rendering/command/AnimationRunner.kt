@@ -4,9 +4,13 @@ import jp.osak.viznyan.rendering.DotGraph
 import jp.osak.viznyan.rendering.State
 import java.lang.RuntimeException
 
-class AnimationRunner(private val frames: List<Frame>) {
+class AnimationRunner() {
+    private val frames: MutableList<Frame> = mutableListOf()
     private var state: State = State()
     private var currentFrame: Int = -1
+
+    val maxFrame: Int
+        get() = frames.size - 1
 
     fun runStep(): State? {
         if (currentFrame == frames.size - 1) {
@@ -18,7 +22,11 @@ class AnimationRunner(private val frames: List<Frame>) {
             when (command) {
                 is AddNode -> {
                     val graph = getGraph(command.graphId)
-                    graph.addNode(command.nodeId.toString())
+                    if (command.x != null && command.y != null) {
+                        graph.addNode(command.nodeId.toString(), command.x, command.y)
+                    } else {
+                        graph.addNode(command.nodeId.toString())
+                    }
                 }
                 is AddEdge -> {
                     val graph = getGraph(command.graphId)
@@ -28,6 +36,23 @@ class AnimationRunner(private val frames: List<Frame>) {
         }
 
         currentFrame++
+        return state
+    }
+
+    fun addFrame(frame: Frame) {
+        frames.add(frame)
+    }
+
+    fun getState(frame: Int): State {
+        require (frame in 0..frames.size-1) { "frame is out of range: $frame" }
+
+        if (currentFrame > frame) {
+            state = State()
+            currentFrame = -1
+        }
+        while (currentFrame < frame) {
+            runStep()
+        }
         return state
     }
 
